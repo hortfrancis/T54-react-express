@@ -4,6 +4,11 @@ const app = express();
 
 const cors = require('cors');
 
+const bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+// req.body.name
+
 const fs = require('fs');
 
 // Specify the port number as a variable.
