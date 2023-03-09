@@ -7,7 +7,7 @@ const cors = require('cors');
 const fs = require('fs');
 
 // Specify the port number as a variable.
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
 
 // Store the route in a variable
 const ROUTE = '/api';
