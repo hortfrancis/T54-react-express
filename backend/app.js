@@ -26,7 +26,7 @@ const webProjects = [
     {
         id: "1",
         title: "React Game!",
-        description: "Tic tac toe game created using Create React app.",
+        description: "Tic tac toe game created using 'Create React App'.",
         url: "http://heroku/myapp/game/"
     },
     {
