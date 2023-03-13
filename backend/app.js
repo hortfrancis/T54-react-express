@@ -57,20 +57,25 @@ app.post(ROUTE, (req, res) => {
 
     console.log("POST request received!");
 
+    // Retrieve JSON variables from the request body
+    const { title, description, url } = req.body;
+
+
     // Check for required data from the client 
-    if (!req.query.title || !req.query.description || !req.query.url) {
+    if (!title || !description || !url) {
         console.log("Missing required data");
         res.status(400).send({ error: 'Missing required data' });
         return;
     }
 
-    // Create an object literal with the POST query data
+    // Create an object literal with the POST request body data
     const newProject = {
         // Create a UUID in the Express app, not the frontend
         id: uuidv4(),
-        title: decodeURIComponent(req.query.title),
-        description: decodeURIComponent(req.query.description),
-        url: decodeURIComponent(req.query.url)
+        // Using ES6 shorthand syntax for the object literal
+        title,
+        description,
+        url
     }
 
     // Add the new project to the array
@@ -86,12 +91,12 @@ app.delete(ROUTE, (req, res) => {
     console.log('DELETE request received!');
 
     // Find the web project in the array using the ID parameter
-    const index = findWebProjectIndex(req.query.id);
+    const index = findWebProjectIndex(req.body.id);
 
     // If the web project exists, remove it from the array
     if (index !== -1) {
         webProjects.splice(index, 1);
-        // Use 204 to indicate successful DELETE request with no response body
+
         res.status(204).send({ message: 'Project deleted successfully.' }); 
     } else {
         // If the web project doesn't exist, return a 404 error
@@ -107,16 +112,20 @@ app.put(ROUTE, (req, res) => {
     console.log('PUT request received!');
 
     // Get the requested project using the id provided 
-    const index = findWebProjectIndex(req.query.id);
+    const index = findWebProjectIndex(req.body.id);
 
-    if (index !== -1) {
+    // Check the ID provided was recognised & that all required data was received 
+    if (index !== -1 
+        && req.body.title 
+        && req.body.description 
+        && req.body.url) {
+
         // Assign new values 
         const currentProject = webProjects[index];
-        currentProject.title = req.query.title;
-        currentProject.description = req.query.description;
-        currentProject.url = req.query.url;
+        currentProject.title = req.body.title;
+        currentProject.description = req.body.description;
+        currentProject.url = req.body.url;
 
-        // Use 204 to indicate successful PUT request with no response body
         res.status(204).send({ message: 'Project edited successfully.' }); 
     } else {
         res.status(404).send({ error: 'Web project not found' });
