@@ -19,6 +19,12 @@ const PORT = process.env.PORT || 8080;
 const ROUTE = '/api';
 
 
+// Helper function to find the index of a web project in the array from a UUID
+function findWebProjectIndex(id) {
+    return webProjects.findIndex(project => project.id === id);
+}
+
+
 // Initialise array of default web project data
 const webProjects = [
     {
@@ -40,12 +46,23 @@ const webProjects = [
 
 // Return information on all web projects
 app.get(ROUTE, (req, res) => {
+
     console.log("GET request received!");
+
     res.send(JSON.stringify(webProjects));
-})
+});
 
 // Add a new web project
 app.post(ROUTE, (req, res) => {
+
+    console.log("POST request received!");
+
+    // Check for required data from the client 
+    if (!req.query.title || !req.query.description || !req.query.url) {
+        console.log("Missing required data");
+        res.status(400).send({ error: 'Missing required data' });
+        return;
+    }
 
     // Create an object literal with the POST query data
     const newProject = {
@@ -56,59 +73,56 @@ app.post(ROUTE, (req, res) => {
         url: decodeURIComponent(req.query.url)
     }
 
-    // To avoid duplicate project data, position in array is derived from id provided.  
-    const newProjectIndex = Number(req.query.id) - 1;
+    // Add the new project to the array
+    webProjects.push(newProject);
 
-    // Add the POST data to the array of web projects
-    webProjects[newProjectIndex] = newProject;
-
-    // Send a confirmation back
-    res.write("POST request executed!");
-    res.write("\nWeb projects:\n" + JSON.stringify(webProjects, null, '\n\t'));
-    res.end();
+    // Send a confirmation message to the client
+    res.status(201).send({ message: 'New project created successfully.' });
 });
 
 // Delete a web project 
 app.delete(ROUTE, (req, res) => {
 
-    console.log(req.query);
+    console.log('DELETE request received!');
 
     // Find the web project in the array using the ID parameter
-    
-    const index = webProjects.findIndex(project => project.id === req.query.id);
+    const index = findWebProjectIndex(req.query.id);
 
     // If the web project exists, remove it from the array
     if (index !== -1) {
         webProjects.splice(index, 1);
-        res.write("DELETE request executed!");
-        res.write("\nWeb projects:\n" + JSON.stringify(webProjects, null, '\n\t'));
-        res.end();
+        // Use 204 to indicate successful DELETE request with no response body
+        res.status(204).send({ message: 'Project deleted successfully.' }); 
     } else {
         // If the web project doesn't exist, return a 404 error
-        res.status(404).send('Web project not found');
+        res.status(404).send({ error: 'Web project not found' });
     }
 
-})
+});
+
 
 // Edit a web project 
 app.put(ROUTE, (req, res) => {
 
+    console.log('PUT request received!');
+
     // Get the requested project using the id provided 
-    const currentProject = webProjects[Number(req.query.id) - 1];
+    const index = findWebProjectIndex(req.query.id);
 
-    // Assign new values 
-    currentProject.id = req.query.id;
-    currentProject.title = req.query.title;
-    currentProject.description = req.query.description;
-    currentProject.url = req.query.url;
+    if (index !== -1) {
+        // Assign new values 
+        const currentProject = webProjects[index];
+        currentProject.title = req.query.title;
+        currentProject.description = req.query.description;
+        currentProject.url = req.query.url;
 
-    res.write("PUT request executed!");
-    res.write(`\nProject #${req.query.id} changed.`)
-    // Display current web projects to view the change
-    res.write("\nWeb projects:\n" + JSON.stringify(webProjects, null, '\n\t'));
-    res.end();
+        // Use 204 to indicate successful PUT request with no response body
+        res.status(204).send({ message: 'Project edited successfully.' }); 
+    } else {
+        res.status(404).send({ error: 'Web project not found' });
+    }
 
-})
+});
 
 /* END OF ROUTING METHODS */
 
